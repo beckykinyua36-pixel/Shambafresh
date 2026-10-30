@@ -1,0 +1,14 @@
+const hits = new Map();
+
+module.exports = function loginLimiter(req, res, next) {
+  const now = Date.now();
+  const windowMs = 15 * 60 * 1000;
+  const max = 10;
+  const recent = (hits.get(req.ip) || []).filter((t) => now - t < windowMs);
+  if (recent.length >= max) {
+    return res.status(429).json({ error: 'Too many attempts. Try again in 15 minutes.' });
+  }
+  recent.push(now);
+  hits.set(req.ip, recent);
+  next();
+};
